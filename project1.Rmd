@@ -15,7 +15,7 @@ dailytotals$Date <- as.Date(dailytotals$Date)
 
 First, we'll look at a histogram of the total number of steps per day through the two-month period covered by the data set.
 
-```{r fig.height=4}
+```{r fig.height=4, fig.width=20}
 par(las=2)
 ggplot(dailytotals, aes( x = factor(Date), y = Steps)) + geom_histogram(stat= "identity") + theme(axis.text.x = element_text(size=8, angle=45, hjust=1))
 ```
@@ -31,8 +31,17 @@ For this two-month period, the mean number of steps is `r meanDaily` and the med
 
 ## What is the average daily activity pattern?
 
+```{r echo=FALSE}
+goodrows <- complete.cases(data)
+data1 <- data[goodrows,]
+avgint <- aggregate(data1$steps, by=list(data1$interval), FUN=mean)
+colnames(avgint) = c("Interval", "Average")
+plot(avgint$Interval, avgint$Average, type="l", col="blue", main="Average Steps per 5-minute Interval Time Series", xlab="Interval", ylab="Interval Average")
+indexMax = which(avgint$Average == max(avgint$Average))
+intervalMax = avgint[indexMax, "Interval"]
+```
 
-
+The `r intervalMax` time interval is when the maximum average steps occurs in a day across the two-month data set.
 ## Imputing missing values
 
 
