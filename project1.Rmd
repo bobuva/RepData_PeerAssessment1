@@ -30,7 +30,6 @@ For this two-month period, the mean number of steps is `r meanDaily` and the med
 
 
 ## What is the average daily activity pattern?
-
 ```{r echo=FALSE}
 goodrows <- complete.cases(data)
 data1 <- data[goodrows,]
@@ -44,6 +43,19 @@ intervalMax = avgint[indexMax, "Interval"]
 The `r intervalMax` time interval is when the maximum average steps occurs in a day across the two-month data set.
 ## Imputing missing values
 
+There are `r nrow(data) - nrow(data1)` missing values in the data set.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+steps <- data$steps
+indexNAs <- which(is.na(steps))
+intervalsForNAs <- data[indexNAs, "interval"]
+averages <- avgint[intervalsForNAs, "Average"]
+averages <- averages[!is.na(averages)]
+
+# for each of these indices, I want to retrieve the "interval" value from
+# data and then get that interval value's Average from avgint. This value I
+# will use to replace the specific NA value.
+
+#steps[which(is.na(steps)),] <- 
