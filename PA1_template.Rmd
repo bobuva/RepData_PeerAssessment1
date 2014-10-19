@@ -1,25 +1,102 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
-
+Reproducible Research: Peer Assessment 1
+========================================
 
 ## Loading and preprocessing the data
+```{r setoptions, echo=TRUE}
+library(ggplot2)
+library(plyr)
+library(lattice)
 
-
+data <- read.csv("activity.csv")
+dailytotals <- aggregate(data$steps, by=list(data$date), FUN=sum)
+colnames(dailytotals) <- c("Date","Steps")
+dailytotals$Date <- as.Date(dailytotals$Date)
+```
 
 ## What is mean total number of steps taken per day?
 
+First, we'll look at a histogram of the total number of steps per day through the two-month period covered by the data set.
+
+```{r fig.height=4, fig.width=20}
+par(las=2)
+ggplot(dailytotals, aes( x = factor(Date), y = Steps)) + geom_histogram(stat= "identity") + theme(axis.text.x = element_text(size=8, angle=45, hjust=1))
+```
+
+```{r echo=FALSE}
+good <- complete.cases(dailytotals)
+totals <- dailytotals[good,]
+meanDaily <- mean(totals$Steps)
+medianDaily <- median(totals$Steps)
+
+```
+For this two-month period, the mean number of steps is `r format(meanDaily, scientific=FALSE)` and the median number of steps is `r format(medianDaily, scientific=FALSE)`.
 
 
 ## What is the average daily activity pattern?
+```{r}
+goodrows <- complete.cases(data)
+data1 <- data[goodrows,]
+avgint <- aggregate(data1$steps, by=list(data1$interval), FUN=mean)
+colnames(avgint) = c("Interval", "Average")
+plot(avgint$Interval, avgint$Average, type="l", col="blue", main="Average Steps per 5-minute Interval Time Series", xlab="Interval", ylab="Interval Average")
+indexMax = which(avgint$Average == max(avgint$Average))
+intervalMax = avgint[indexMax, "Interval"]
+```
 
-
-
+The `r intervalMax` time interval is when the maximum average steps occurs in a day across the two-month data set.
 ## Imputing missing values
 
+There are `r nrow(data) - nrow(data1)` missing values in the data set.
 
+```{r echo=FALSE}
+
+datareplace <- data
+
+for( i in 1:nrow(datareplace)) {
+  if (is.na(datareplace[i, "steps"])) {
+    datareplace[i, "steps"] <- avgint[which(avgint$Interval == datareplace[i, "interval"]), "Average"]
+  }
+}
+
+```
+
+Here is a summary of a new data set where the missing steps values have been replaced with the average of the steps for the respective 5-minute time interval.
+
+```{r}
+summary(datareplace)
+```
+
+Histogram of the total number of steps taken each day.
+
+```{r}
+dailytotals2 <- aggregate(datareplace$steps, by=list(datareplace$date), FUN=sum)
+colnames(dailytotals2) <- c("Date","Steps")
+dailytotals2$Date <- as.Date(dailytotals2$Date)
+
+```
+
+```{r, results='asis', fig.height=4, fig.width=20}
+par(las=2)
+ggplot(dailytotals2, aes( x = factor(Date), y = Steps)) + geom_histogram(stat= "identity") + theme(axis.text.x = element_text(size=8, angle=45, hjust=1))
+```
+
+
+```{r}
+meanDaily2 <- mean(dailytotals2$Steps)
+medianDaily2 <- median(dailytotals2$Steps)
+
+```
+
+For this two-month period, using the data set where missing values have been replaced by their respective interval averages, the mean number of steps is `r format(meanDaily2, scientific=FALSE)` and the median number of steps is `r format(medianDaily2, scientific=FALSE)`. The mean and median values have been rounded to an integer, and as these values show, the difference in mean and median between the original and the replacement data sets is very small. The median value increased by `r round(medianDaily2 - medianDaily)` or only by `r (round(medianDaily2 - medianDaily) * 100)/medianDaily` percent. 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```{r results='asis'}
+datareplace$partOfWeek <- ifelse(weekdays(as.Date(datareplace$date), abbreviate=TRUE) %in% c("Sat", "Sun"), "weekend", "weekday")
+
+avgint2 <- aggregate(datareplace$steps, by=list(datareplace$interval, datareplace$partOfWeek), FUN=mean)
+colnames(avgint2) = c("Interval", "PartOfWeek", "Average")
+
+xyplot(Average ~ Interval | PartOfWeek, data=avgint2, layout=c(1,2), xlab="Interval", ylab="Number of steps", type="l")
+
+```

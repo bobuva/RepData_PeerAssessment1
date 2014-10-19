@@ -5,6 +5,8 @@ Reproducible Research: Peer Assessment 1
 ```{r}
 library(ggplot2)
 library(plyr)
+library(lattice)
+
 data <- read.csv("activity.csv")
 dailytotals <- aggregate(data$steps, by=list(data$date), FUN=sum)
 colnames(dailytotals) <- c("Date","Steps")
@@ -78,7 +80,6 @@ par(las=2)
 ggplot(dailytotals2, aes( x = factor(Date), y = Steps)) + geom_histogram(stat= "identity") + theme(axis.text.x = element_text(size=8, angle=45, hjust=1))
 ```
 
-## Are there differences in activity patterns between weekdays and weekends?
 
 ```{r echo=FALSE}
 meanDaily2 <- mean(dailytotals2$Steps)
@@ -87,3 +88,15 @@ medianDaily2 <- median(dailytotals2$Steps)
 ```
 
 For this two-month period, using the data set where missing values have been replaced by their respective interval averages, the mean number of steps is `r format(meanDaily2, scientific=FALSE)` and the median number of steps is `r format(medianDaily2, scientific=FALSE)`. The mean and median values have been rounded to an integer, and as these values show, the difference in mean and median between the original and the replacement data sets is very small. The median value increased by `r round(medianDaily2 - medianDaily)` or only by `r (round(medianDaily2 - medianDaily) * 100)/medianDaily` percent. 
+
+## Are there differences in activity patterns between weekdays and weekends?
+
+```{r echo=FALSE, results='asis'}
+datareplace$partOfWeek <- ifelse(weekdays(as.Date(datareplace$date), abbreviate=TRUE) %in% c("Sat", "Sun"), "weekend", "weekday")
+
+avgint2 <- aggregate(datareplace$steps, by=list(datareplace$interval, datareplace$partOfWeek), FUN=mean)
+colnames(avgint2) = c("Interval", "PartOfWeek", "Average")
+
+xyplot(Average ~ Interval | PartOfWeek, data=avgint2, layout=c(1,2), xlab="Interval", ylab="Number of steps", type="l")
+
+```
