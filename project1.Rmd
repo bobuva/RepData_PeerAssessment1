@@ -25,8 +25,9 @@ good <- complete.cases(dailytotals)
 totals <- dailytotals[good,]
 meanDaily <- mean(totals$Steps)
 medianDaily <- median(totals$Steps)
+
 ```
-For this two-month period, the mean number of steps is `r meanDaily` and the median number of steps is `r medianDaily`.
+For this two-month period, the mean number of steps is `r format(meanDaily, scientific=FALSE)` and the median number of steps is `r format(medianDaily, scientific=FALSE)`.
 
 
 ## What is the average daily activity pattern?
@@ -79,3 +80,10 @@ ggplot(dailytotals2, aes( x = factor(Date), y = Steps)) + geom_histogram(stat= "
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
+```{r echo=FALSE}
+meanDaily2 <- mean(dailytotals2$Steps)
+medianDaily2 <- median(dailytotals2$Steps)
+
+```
+
+For this two-month period, using the data set where missing values have been replaced by their respective interval averages, the mean number of steps is `r format(meanDaily2, scientific=FALSE)` and the median number of steps is `r format(medianDaily2, scientific=FALSE)`. The mean and median values have been rounded to an integer, and as these values show, the difference in mean and median between the original and the replacement data sets is very small. The median value increased by `r round(medianDaily2 - medianDaily)` or only by `r (round(medianDaily2 - medianDaily) * 100)/medianDaily` percent. 
